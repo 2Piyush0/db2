@@ -1,0 +1,61 @@
+-- Create Database
+CREATE DATABASE IF NOT EXISTS BankingDB;
+USE BankingDB;
+
+-- Create Account Table
+CREATE TABLE Account (
+    Account_No INT PRIMARY KEY,
+    Cust_Name VARCHAR(100),
+    Balance DECIMAL(10, 2),
+    NoOfYears INT
+);
+
+-- Create Earned_Interest Table
+CREATE TABLE Earned_Interest (
+    Account_No INT PRIMARY KEY,
+    Interest_Amt DECIMAL(10, 2),
+    FOREIGN KEY (Account_No) REFERENCES Account(Account_No)
+);
+DELIMITER //
+
+-- Create Procedure to Calculate Interest
+CREATE PROCEDURE Calculate_Interest(IN p_Account_No INT, IN p_Interest_Rate DECIMAL(10, 2))
+BEGIN
+    DECLARE v_Balance DECIMAL(10, 2);
+    DECLARE v_NoOfYears INT;
+    DECLARE v_Interest_Amt DECIMAL(10, 2);
+
+    -- Fetch Balance and NoOfYears for the given Account_No
+    SELECT Balance, NoOfYears INTO v_Balance, v_NoOfYears
+    FROM Account
+    WHERE Account_No = p_Account_No;
+
+    -- Calculate Interest Amount (Simple Interest formula)
+    SET v_Interest_Amt = (v_Balance * p_Interest_Rate * v_NoOfYears) / 100;
+
+    -- Insert the calculated interest into Earned_Interest table
+    INSERT INTO Earned_Interest (Account_No, Interest_Amt)
+    VALUES (p_Account_No, v_Interest_Amt);
+
+    -- Display all records from Earned_Interest table
+    SELECT * FROM Earned_Interest;
+END //
+
+DELIMITER ;
+-- Calling the Calculate_Interest Procedure for Account_No 101 with 5% interest rate
+CALL Calculate_Interest(101, 5);
+DELIMITER //
+
+-- Create Function to Get Accounts with Balance Greater than 50,000
+CREATE PROCEDURE Get_Accounts_By_Balance()
+BEGIN
+    -- Select Accounts with Balance greater than 50,000
+    SELECT Account_No, Cust_Name, Balance, NoOfYears
+    FROM Account
+    WHERE Balance > 50000;
+END //
+
+DELIMITER ;
+-- Calling the Get_Accounts_By_Balance Procedure
+CALL Get_Accounts_By_Balance();
+

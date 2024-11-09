@@ -1,0 +1,71 @@
+-- Create the database
+CREATE DATABASE IF NOT EXISTS CustomerDB;
+
+-- Use the created database
+USE CustomerDB;
+
+-- Create the Customer Table
+CREATE TABLE IF NOT EXISTS Customer (
+    CustID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Cust_Address VARCHAR(255),
+    Phone_no VARCHAR(15),
+    Email_ID VARCHAR(100),  -- Initially, we can set a larger length
+    Age INT
+);
+
+-- Modify the Email_ID column to set a size limit of 20 characters and make it NOT NULL
+ALTER TABLE Customer
+MODIFY COLUMN Email_ID VARCHAR(20) NOT NULL;
+
+-- Create the Branch Table
+CREATE TABLE IF NOT EXISTS Branch (
+    Branch_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Branch_Name VARCHAR(100),
+    Address VARCHAR(255)
+);
+
+-- Create the Account Table with Foreign Keys
+CREATE TABLE IF NOT EXISTS Account (
+    Account_no INT PRIMARY KEY AUTO_INCREMENT,
+    Branch_ID INT,
+    CustID INT,
+    date_open DATE,
+    Account_type VARCHAR(50),
+    Balance DECIMAL(10, 2),
+    FOREIGN KEY (Branch_ID) REFERENCES Branch(Branch_ID),
+    FOREIGN KEY (CustID) REFERENCES Customer(CustID)
+);
+
+-- Create Index on Account Table for Account_no
+CREATE INDEX IF NOT EXISTS idx_account_primary_key ON Account (Account_no);
+
+-- Query to get the total number of customers who have balance > 50000
+SELECT COUNT(DISTINCT c.CustID) AS Total_Customers
+FROM Customer c
+JOIN Account a ON c.CustID = a.CustID
+WHERE a.Balance > 50000;
+
+-- Query to get the average balance for "Saving Account"
+SELECT AVG(a.Balance) AS Average_Balance
+FROM Account a
+WHERE a.Account_type = 'Saving Account';
+
+-- Query to get customers with address containing "Pune" or names starting with 'A'
+SELECT *
+FROM Customer
+WHERE Cust_Address LIKE '%Pune%' OR Name LIKE 'A%';
+
+-- Create a new table Saving_Account with all "Saving Account" type data
+CREATE TABLE IF NOT EXISTS Saving_Account AS
+SELECT Account_no, Branch_ID, CustID, date_open, Balance
+FROM Account
+WHERE Account_type = 'Saving Account';
+
+-- Query to select customers with a balance greater than or equal to 20000, ordered by age
+SELECT c.Age, c.Name, c.Cust_Address, a.Balance
+FROM Customer c
+JOIN Account a ON c.CustID = a.CustID
+WHERE a.Balance >= 20000
+ORDER BY c.Age;
+

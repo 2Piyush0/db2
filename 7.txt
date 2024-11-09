@@ -1,0 +1,63 @@
+// Create the Book collection
+db.createCollection("Book");
+
+// Insert sample data into the Book collection
+db.Book.insertMany([
+  { Title: "The Great Gatsby", Author_name: "F. Scott Fitzgerald", Borrowed_status: true, Price: 350 },
+  { Title: "1984", Author_name: "George Orwell", Borrowed_status: false, Price: 150 },
+  { Title: "To Kill a Mockingbird", Author_name: "Harper Lee", Borrowed_status: true, Price: 400 },
+  { Title: "The Catcher in the Rye", Author_name: "J.D. Salinger", Borrowed_status: false, Price: 200 },
+  { Title: "Pride and Prejudice", Author_name: "Jane Austen", Borrowed_status: true, Price: 500 },
+  { Title: "Moby-Dick", Author_name: "Herman Melville", Borrowed_status: true, Price: 600 },
+  { Title: "War and Peace", Author_name: "Leo Tolstoy", Borrowed_status: false, Price: 150 },
+  { Title: "The Odyssey", Author_name: "Homer", Borrowed_status: true, Price: 350 },
+  { Title: "Crime and Punishment", Author_name: "Fyodor Dostoevsky", Borrowed_status: true, Price: 250 },
+  { Title: "The Brothers Karamazov", Author_name: "Fyodor Dostoevsky", Borrowed_status: false, Price: 200 }
+]);
+// MapReduce for Author-wise list of books
+var map1 = function() {
+  emit(this.Author_name, this.Title);
+};
+
+var reduce1 = function(key, values) {
+  return values;  // Return the list of book titles
+};
+
+var result1 = db.Book.mapReduce(map1, reduce1, { out: { inline: 1 } });
+printjson(result1);
+// MapReduce for Author-wise books with Borrowed status = True
+var map2 = function() {
+  if (this.Borrowed_status === true) {
+    emit(this.Author_name, this.Title);
+  }
+};
+
+var reduce2 = function(key, values) {
+  return values;  // Return the list of books that are borrowed
+};
+
+var result2 = db.Book.mapReduce(map2, reduce2, { out: { inline: 1 } });
+printjson(result2);
+// MapReduce for Author-wise books with Price > 300
+var map3 = function() {
+  if (this.Price > 300) {
+    emit(this.Author_name, this.Title);
+  }
+};
+
+var reduce3 = function(key, values) {
+  return values;  // Return the list of books with price greater than 300
+};
+
+var result3 = db.Book.mapReduce(map3, reduce3, { out: { inline: 1 } });
+printjson(result3);
+// Run the first MapReduce function
+var result1 = db.Book.mapReduce(map1, reduce1, { out: { inline: 1 } });
+printjson(result1);
+// Run the second MapReduce function
+var result2 = db.Book.mapReduce(map2, reduce2, { out: { inline: 1 } });
+printjson(result2);
+// Run the third MapReduce function
+var result3 = db.Book.mapReduce(map3, reduce3, { out: { inline: 1 } });
+printjson(result3);
+

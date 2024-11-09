@@ -1,0 +1,90 @@
+-- Step 1: Create the Database
+DROP DATABASE IF EXISTS BankDB;
+CREATE DATABASE BankDB;
+USE BankDB;
+
+-- Step 2: Create the Customer Table
+CREATE TABLE Customer (
+    CustID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Cust_Address VARCHAR(255),
+    Phone_no VARCHAR(15),
+    Age INT
+);
+
+-- Insert data into Customer table
+INSERT INTO Customer (CustID, Name, Cust_Address, Phone_no, Age) VALUES
+(101, 'John Doe', 'New York', '1234567890', 30),
+(102, 'Jane Smith', 'Pune', '2345678901', 40),
+(103, 'Sam Brown', 'Mumbai', '3456789012', 50),
+(104, 'Anna White', 'Pune', '4567890123', 36),
+(105, 'Chris Green', 'Bangalore', '5678901234', 28);
+
+-- Step 3: Create the Branch Table
+CREATE TABLE Branch (
+    BranchID INT PRIMARY KEY,
+    Branch_Name VARCHAR(100),
+    Address VARCHAR(255)
+);
+
+-- Insert data into Branch table
+INSERT INTO Branch (BranchID, Branch_Name, Address) VALUES
+(1, 'Downtown Branch', 'Main Street, New York'),
+(2, 'Pune Branch', 'MG Road, Pune'),
+(3, 'Mumbai Branch', 'Marine Drive, Mumbai'),
+(4, 'Bangalore Branch', 'Brigade Road, Bangalore');
+
+-- Step 4: Create the Account Table with Foreign Keys
+CREATE TABLE Account (
+    Account_no INT PRIMARY KEY,
+    BranchID INT,
+    CustID INT,
+    date_open DATE,
+    Account_type VARCHAR(50),
+    Balance DECIMAL(15, 2),
+    FOREIGN KEY (BranchID) REFERENCES Branch(BranchID),
+    FOREIGN KEY (CustID) REFERENCES Customer(CustID)
+);
+
+-- Insert data into Account table
+INSERT INTO Account (Account_no, BranchID, CustID, date_open, Account_type, Balance) VALUES
+(1001, 1, 101, '2022-01-15', 'Saving Account', 5000.00),
+(1002, 2, 102, '2022-02-20', 'Current Account', 10000.00),
+(1003, 3, 103, '2022-03-10', 'Saving Account', 2000.00),
+(1004, 4, 104, '2022-04-25', 'Saving Account', 1500.00),
+(1005, 2, 105, '2022-05-30', 'Current Account', 7000.00);
+
+-- Step 5: Add a New Column "Email_ID" to the Customer Table
+ALTER TABLE Customer ADD COLUMN Email_ID VARCHAR(100);
+
+-- Step 6: Queries
+
+-- Display customer details with the highest balance
+SELECT c.CustID, c.Name, c.Cust_Address, c.Phone_no, c.Age, a.Balance
+FROM Customer c
+JOIN Account a ON c.CustID = a.CustID
+WHERE a.Balance = (SELECT MAX(Balance) FROM Account);
+
+-- Display customer details with the lowest balance for Saving Account
+SELECT c.CustID, c.Name, c.Cust_Address, c.Phone_no, c.Age, a.Balance
+FROM Customer c
+JOIN Account a ON c.CustID = a.CustID
+WHERE a.Account_type = 'Saving Account'
+AND a.Balance = (SELECT MIN(Balance) FROM Account WHERE Account_type = 'Saving Account');
+
+-- Display customer details living in Pune and age greater than 35
+SELECT CustID, Name, Cust_Address, Phone_no, Age
+FROM Customer
+WHERE Cust_Address = 'Pune' AND Age > 35;
+
+-- Display CustID, Name, and Age of customers sorted by Age
+SELECT CustID, Name, Age
+FROM Customer
+ORDER BY Age ASC;
+
+-- Display Name and BranchID of customers grouped by Account Type
+SELECT c.Name, a.Account_type, a.BranchID
+FROM Customer c
+JOIN Account a ON c.CustID = a.CustID
+ORDER BY a.Account_type, a.BranchID, c.Name;
+

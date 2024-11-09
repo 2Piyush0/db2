@@ -1,0 +1,30 @@
+use MoviesDatabase;
+
+db.createCollection("Movies_Data");
+
+db.Movies_Data.insertMany([
+    { Movie_ID: 1, Movie_Name: "Inception", Director: "Christopher Nolan", Genre: "Sci-Fi", BoxOfficeCollection: 829895144 },
+    { Movie_ID: 2, Movie_Name: "The Dark Knight", Director: "Christopher Nolan", Genre: "Action", BoxOfficeCollection: 1004558444 },
+    { Movie_ID: 3, Movie_Name: "Avatar", Director: "James Cameron", Genre: "Sci-Fi", BoxOfficeCollection: 2787965087 },
+    { Movie_ID: 4, Movie_Name: "Titanic", Director: "James Cameron", Genre: "Romance", BoxOfficeCollection: 2187463944 },
+    { Movie_ID: 5, Movie_Name: "The Matrix", Director: "The Wachowskis", Genre: "Sci-Fi", BoxOfficeCollection: 466263527 },
+    { Movie_ID: 6, Movie_Name: "The Shawshank Redemption", Director: "Frank Darabont", Genre: "Drama", BoxOfficeCollection: 28341469 },
+    { Movie_ID: 7, Movie_Name: "The Godfather", Director: "Francis Ford Coppola", Genre: "Crime", BoxOfficeCollection: 246120974 },
+    { Movie_ID: 8, Movie_Name: "The Godfather: Part II", Director: "Francis Ford Coppola", Genre: "Crime", BoxOfficeCollection: 57000000 },
+    { Movie_ID: 9, Movie_Name: "Avengers: Endgame", Director: "Anthony Russo, Joe Russo", Genre: "Action", BoxOfficeCollection: 2797800564 }
+]);
+db.Movies_Data.aggregate([
+    { $group: { _id: "$Director", movie_count: { $sum: 1 } } }
+]);
+db.Movies_Data.aggregate([
+    { $group: { _id: "$Genre", highest_collection: { $max: "$BoxOfficeCollection" } } }
+]);
+db.Movies_Data.aggregate([
+    { $group: { _id: "$Genre", highest_collection: { $max: "$BoxOfficeCollection" }, movie_name: { $first: "$Movie_Name" }, movie_id: { $first: "$Movie_ID" } } },
+    { $sort: { highest_collection: 1 } }
+]);
+db.Movies_Data.createIndex({ Movie_ID: 1 });
+db.Movies_Data.createIndex({ Movie_Name: 1, Director: 1 });
+db.Movies_Data.dropIndex({ Movie_ID: 1 });
+db.Movies_Data.dropIndex({ Movie_Name: 1, Director: 1 });
+

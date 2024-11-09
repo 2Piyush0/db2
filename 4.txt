@@ -1,0 +1,69 @@
+// Connect to the MongoDB database
+use schoolDB;  // Switch to the database (create if doesn't exist)
+
+// Create the collection and insert sample data
+db.Student_Data.insertMany([
+    { Student_ID: 1, Student_Name: "Alice", Department: "Computer Science", Marks: 85 },
+    { Student_ID: 2, Student_Name: "Bob", Department: "Mechanical Engineering", Marks: 78 },
+    { Student_ID: 3, Student_Name: "Charlie", Department: "Computer Science", Marks: 90 },
+    { Student_ID: 4, Student_Name: "David", Department: "Electrical Engineering", Marks: 88 },
+    { Student_ID: 5, Student_Name: "Eva", Department: "Computer Science", Marks: 92 },
+    { Student_ID: 6, Student_Name: "Frank", Department: "Mechanical Engineering", Marks: 74 },
+    { Student_ID: 7, Student_Name: "Grace", Department: "Electrical Engineering", Marks: 79 },
+    { Student_ID: 8, Student_Name: "Hannah", Department: "Computer Science", Marks: 95 },
+    { Student_ID: 9, Student_Name: "Ivy", Department: "Electrical Engineering", Marks: 80 },
+    { Student_ID: 10, Student_Name: "Jack", Department: "Mechanical Engineering", Marks: 70 }
+]);
+// Aggregate to calculate average marks per department
+db.Student_Data.aggregate([
+    { 
+        $group: {
+            _id: "$Department",  // Group by department
+            averageMarks: { $avg: "$Marks" }  // Calculate average marks
+        }
+    },
+    {
+        $sort: { _id: 1 }  // Sort by department name (optional)
+    }
+]);
+// Group by department and count the number of students in each department
+db.Student_Data.aggregate([
+    { 
+        $group: {
+            _id: "$Department",  // Group by department
+            totalStudents: { $sum: 1 }  // Count the number of students
+        }
+    },
+    {
+        $sort: { _id: 1 }  // Sort by department name (optional)
+    }
+]);
+// Aggregate to find the highest marks student in each department
+db.Student_Data.aggregate([
+    { 
+        $sort: { Marks: -1 }  // Sort by marks in descending order
+    },
+    {
+        $group: {
+            _id: "$Department",  // Group by department
+            highestMarksStudent: { $first: "$$ROOT" }  // Get the first document (highest marks)
+        }
+    },
+    {
+        $project: {
+            _id: 0,  // Don't include the department in the result
+            Student_Name: "$highestMarksStudent.Student_Name",
+            Marks: "$highestMarksStudent.Marks",
+            Department: "$_id"
+        }
+    }
+]);
+// Create an index on Student_ID field
+db.Student_Data.createIndex({ Student_ID: 1 });
+// Create an index on fields Student_Name and Department
+db.Student_Data.createIndex({ Student_Name: 1, Department: 1 });
+// Drop the index on Student_ID
+db.Student_Data.dropIndex({ Student_ID: 1 });
+// Drop the index on fields Student_Name and Department
+db.Student_Data.dropIndex({ Student_Name: 1, Department: 1 });
+

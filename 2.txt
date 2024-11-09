@@ -1,0 +1,62 @@
+CREATE DATABASE BankDB;
+USE BankDB;
+-- Creating the Customer Table
+CREATE TABLE Customer (
+    CustID INT PRIMARY KEY AUTO_INCREMENT,
+    Name VARCHAR(100),
+    Cust_Address VARCHAR(255),
+    Phone_no VARCHAR(15),
+    Email_ID VARCHAR(100),
+    Age INT
+);
+
+-- Creating the Branch Table
+CREATE TABLE Branch (
+    Branch_ID INT PRIMARY KEY AUTO_INCREMENT,
+    Branch_Name VARCHAR(100),
+    Address VARCHAR(255)
+);
+
+-- Creating the Account Table with Referential Integrity
+CREATE TABLE Account (
+    Account_no INT PRIMARY KEY AUTO_INCREMENT,
+    Branch_ID INT,
+    CustID INT,
+    open_date DATE,
+    Account_type VARCHAR(50),
+    Balance DECIMAL(10, 2),
+    FOREIGN KEY (Branch_ID) REFERENCES Branch(Branch_ID),
+    FOREIGN KEY (CustID) REFERENCES Customer(CustID)
+);
+
+-- Creating View for Saving Account
+CREATE VIEW Saving_Account AS
+SELECT c.CustID, c.Name, c.Cust_Address, c.Phone_no, c.Email_ID, c.Age, 
+       a.Account_no, a.open_date, a.Account_type, a.Balance
+FROM Customer c
+JOIN Account a ON c.CustID = a.CustID
+WHERE a.Account_type = 'Saving' AND a.open_date = '2018-08-16';
+
+-- Updating Customer Address
+UPDATE Customer
+SET Cust_Address = 'Pune'
+WHERE CustID = 103;
+
+-- Creating View for Loan Account
+CREATE VIEW Loan_Account AS
+SELECT c.CustID, c.Name, c.Cust_Address, c.Phone_no, c.Email_ID, c.Age, 
+       a.Account_no, a.open_date, a.Account_type, a.Balance
+FROM Customer c
+JOIN Account a ON c.CustID = a.CustID
+WHERE a.Account_type = 'Loan' AND a.open_date = '2018-02-16';
+
+-- Creating Index on CustID for Customer Table
+CREATE INDEX idx_customer_id ON Customer(CustID);
+
+-- Creating Index on Branch_ID for Branch Table
+CREATE INDEX idx_branch_id ON Branch(Branch_ID);
+
+-- Creating a Synonym for Branch Table using View
+CREATE VIEW Cust_info AS
+SELECT * FROM Branch;
+

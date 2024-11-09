@@ -1,0 +1,42 @@
+// Creating the collection and inserting 20 documents
+db.createCollection("Social_Media");
+
+db.Social_Media.insertMany([
+  { User_Id: "U001", User_Name: "JohnDoe", No_of_Posts: 120, No_of_Friends: 50, Friends_List: ["U002", "U003", "U004"], Interests: ["Football", "Traveling"] },
+  { User_Id: "U002", User_Name: "JaneSmith", No_of_Posts: 85, No_of_Friends: 40, Friends_List: ["U001", "U005", "U006"], Interests: ["Cooking", "Music"] },
+  { User_Id: "U003", User_Name: "AliceJohnson", No_of_Posts: 150, No_of_Friends: 100, Friends_List: ["U001", "U002", "U005"], Interests: ["Reading", "Photography"] },
+  { User_Id: "U004", User_Name: "BobBrown", No_of_Posts: 200, No_of_Friends: 150, Friends_List: ["U003", "U002", "U006"], Interests: ["Technology", "Gaming"] },
+  { User_Id: "U005", User_Name: "CharlieDavis", No_of_Posts: 95, No_of_Friends: 20, Friends_List: ["U002", "U004"], Interests: ["Music", "Movies"] },
+  { User_Id: "U006", User_Name: "DavidMiller", No_of_Posts: 300, No_of_Friends: 60, Friends_List: ["U004", "U003", "U002"], Interests: ["Fitness", "Music"] },
+  { User_Id: "U007", User_Name: "EvaGarcia", No_of_Posts: 60, No_of_Friends: 30, Friends_List: ["U001", "U005"], Interests: ["Yoga", "Cooking"] },
+  { User_Id: "U008", User_Name: "FrankLopez", No_of_Posts: 40, No_of_Friends: 10, Friends_List: ["U009", "U010"], Interests: ["Music", "Fashion"] },
+  { User_Id: "U009", User_Name: "GraceMartinez", No_of_Posts: 55, No_of_Friends: 35, Friends_List: ["U008", "U001"], Interests: ["Writing", "Movies"] },
+  { User_Id: "U010", User_Name: "HenryWilson", No_of_Posts: 75, No_of_Friends: 45, Friends_List: ["U008", "U003"], Interests: ["Football", "Cooking"] },
+  { User_Id: "U011", User_Name: "IsabellaMoore", No_of_Posts: 180, No_of_Friends: 60, Friends_List: ["U002", "U003", "U004"], Interests: ["Technology", "Reading"] },
+  { User_Id: "U012", User_Name: "JamesTaylor", No_of_Posts: 110, No_of_Friends: 70, Friends_List: ["U001", "U003", "U007"], Interests: ["Art", "Traveling"] },
+  { User_Id: "U013", User_Name: "KathyJackson", No_of_Posts: 90, No_of_Friends: 25, Friends_List: ["U012", "U004"], Interests: ["Photography", "Technology"] },
+  { User_Id: "U014", User_Name: "LouisHarris", No_of_Posts: 130, No_of_Friends: 85, Friends_List: ["U001", "U005", "U007"], Interests: ["Reading", "Football"] },
+  { User_Id: "U015", User_Name: "MonaClark", No_of_Posts: 50, No_of_Friends: 15, Friends_List: ["U010", "U008"], Interests: ["Movies", "Art"] },
+  { User_Id: "U016", User_Name: "NathanRodriguez", No_of_Posts: 220, No_of_Friends: 120, Friends_List: ["U003", "U002", "U004"], Interests: ["Technology", "Gaming"] },
+  { User_Id: "U017", User_Name: "OliviaLewis", No_of_Posts: 60, No_of_Friends: 50, Friends_List: ["U005", "U007"], Interests: ["Cooking", "Fashion"] },
+  { User_Id: "U018", User_Name: "PaulWalker", No_of_Posts: 140, No_of_Friends: 60, Friends_List: ["U001", "U009"], Interests: ["Sports", "Traveling"] },
+  { User_Id: "U019", User_Name: "QuinnScott", No_of_Posts: 50, No_of_Friends: 10, Friends_List: ["U006"], Interests: ["Fitness", "Music"] },
+  { User_Id: "U020", User_Name: "RachelGreen", No_of_Posts: 180, No_of_Friends: 90, Friends_List: ["U010", "U012"], Interests: ["Art", "Photography"] }
+]);
+db.Social_Media.find().forEach(function(doc) {
+    print("User ID: " + doc.User_Id + ", Name: " + doc.User_Name + ", Posts: " + doc.No_of_Posts +
+        ", Friends: " + doc.No_of_Friends + ", Interests: " + doc.Interests.join(", "));
+});
+db.Social_Media.find({ No_of_Posts: { $gt: 100 } }).forEach(function(doc) {
+    print("User Name: " + doc.User_Name + ", Posts: " + doc.No_of_Posts);
+});
+db.Social_Media.find({}, { User_Name: 1, Friends_List: 1 }).forEach(function(doc) {
+    print("User Name: " + doc.User_Name + ", Friends: " + doc.Friends_List.join(", "));
+});
+db.Social_Media.find({ No_of_Friends: { $gt: 5 } }, { User_Id: 1, Friends_List: 1 }).forEach(function(doc) {
+    print("User ID: " + doc.User_Id + ", Friends: " + doc.Friends_List.join(", "));
+});
+db.Social_Media.find().sort({ No_of_Posts: -1 }).forEach(function(doc) {
+    print("User Name: " + doc.User_Name + ", Posts: " + doc.No_of_Posts);
+});
+

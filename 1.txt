@@ -1,0 +1,127 @@
+// Connect to the MongoDB server and select the database
+use StudentDB;
+
+// Create the 'Student' collection and insert 10 documents
+db.Student.insertMany([
+    {
+        Roll_No: "A01",
+        Name: "John Doe",
+        Class: "SE",
+        Marks: 85,
+        Address: "123 Elm St.",
+        Enrolled_Courses: ["DBMS", "TOC", "OS"]
+    },
+    {
+        Roll_No: "A02",
+        Name: "Jane Smith",
+        Class: "TE",
+        Marks: 45,
+        Address: "456 Oak St.",
+        Enrolled_Courses: ["DBMS", "Networking"]
+    },
+    {
+        Roll_No: "A03",
+        Name: "Mary Johnson",
+        Class: "BE",
+        Marks: 90,
+        Address: "789 Pine St.",
+        Enrolled_Courses: ["TOC", "AI", "DBMS"]
+    },
+    {
+        Roll_No: "A04",
+        Name: "James Brown",
+        Class: "SE",
+        Marks: 60,
+        Address: "101 Maple St.",
+        Enrolled_Courses: ["DBMS", "AI"]
+    },
+    {
+        Roll_No: "A05",
+        Name: "Patricia Lee",
+        Class: "TE",
+        Marks: 95,
+        Address: "202 Birch St.",
+        Enrolled_Courses: ["DBMS", "TOC", "ML"]
+    },
+    {
+        Roll_No: "A06",
+        Name: "Robert White",
+        Class: "SE",
+        Marks: 72,
+        Address: "303 Cedar St.",
+        Enrolled_Courses: ["DBMS", "Networking"]
+    },
+    {
+        Roll_No: "A07",
+        Name: "Linda Harris",
+        Class: "TE",
+        Marks: 55,
+        Address: "404 Walnut St.",
+        Enrolled_Courses: ["DBMS", "AI"]
+    },
+    {
+        Roll_No: "A08",
+        Name: "Michael Clark",
+        Class: "BE",
+        Marks: 30,
+        Address: "505 Fir St.",
+        Enrolled_Courses: ["TOC", "Networking"]
+    },
+    {
+        Roll_No: "A09",
+        Name: "David Lewis",
+        Class: "SE",
+        Marks: 25,
+        Address: "606 Redwood St.",
+        Enrolled_Courses: ["DBMS", "AI"]
+    },
+    {
+        Roll_No: "A10",
+        Name: "Susan Walker",
+        Class: "TE",
+        Marks: 80,
+        Address: "707 Pineapple St.",
+        Enrolled_Courses: ["DBMS", "ML"]
+    }
+]);
+
+// Query to find students enrolled in both "DBMS" and "TOC"
+db.Student.find(
+    { Enrolled_Courses: { $all: ["DBMS", "TOC"] } },
+    { _id: 0, Name: 1 }
+).forEach(printjson);
+
+// Query to find students with marks > 50 or class is TE
+db.Student.find(
+    { $or: [{ Marks: { $gt: 50 } }, { Class: "TE" }] },
+    { _id: 0, Roll_No: 1, Class: 1 }
+).forEach(printjson);
+
+// Query to update the entire record of roll_no A10
+db.Student.updateOne(
+    { Roll_No: "A10" },
+    {
+        $set: {
+            Name: "Susan Walker Updated",
+            Class: "BE",
+            Marks: 90,
+            Address: "123 New Address St.",
+            Enrolled_Courses: ["AI", "Machine Learning"]
+        }
+    }
+);
+
+// Query to find the names of students with the 3rd and 4th highest marks
+db.Student.find({})
+    .sort({ Marks: -1 })
+    .skip(2)  // Skip the first two students (highest and second highest)
+    .limit(2)  // Limit the result to 2 students (3rd and 4th highest)
+    .forEach(printjson);
+
+// Query to delete students with marks less than 20
+db.Student.deleteMany({ Marks: { $lt: 20 } });
+
+// Query to delete the first record from the collection
+db.Student.deleteOne({});
+
+

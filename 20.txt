@@ -1,0 +1,83 @@
+db_connect.php
+<?php
+// Database connection details
+$servername = "localhost";  // MySQL server name (localhost or your server IP)
+$username = "root";         // MySQL username
+$password = "";             // MySQL password (leave empty if none)
+$dbname = "SampleDB";       // Database name
+
+// Create connection
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Check connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+} else {
+    echo "Connected successfully to the database.";
+}
+?>
+
+
+fetch_connect.php
+<?php
+// Include the database connection file
+include('db_connect.php');
+
+// SQL query to fetch all employees
+$sql = "SELECT * FROM Employees";
+$result = $conn->query($sql);
+
+// Check if there are any records in the result set
+if ($result->num_rows > 0) {
+    // Output data of each row
+    echo "<table border='1'>
+            <tr>
+                <th>Employee ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Salary</th>
+                <th>Department</th>
+            </tr>";
+    
+    while ($row = $result->fetch_assoc()) {
+        echo "<tr>
+                <td>" . $row["Employee_ID"] . "</td>
+                <td>" . $row["First_Name"] . "</td>
+                <td>" . $row["Last_Name"] . "</td>
+                <td>" . $row["Salary"] . "</td>
+                <td>" . $row["Department"] . "</td>
+              </tr>";
+    }
+    
+    echo "</table>";
+} else {
+    echo "No records found.";
+}
+
+// Close the connection
+$conn->close();
+?>
+
+-- Create the database
+CREATE DATABASE SampleDB;
+
+-- Select the newly created database
+USE SampleDB;
+
+-- Create the Employees table
+CREATE TABLE Employees (
+    Employee_ID INT PRIMARY KEY AUTO_INCREMENT,
+    First_Name VARCHAR(50),
+    Last_Name VARCHAR(50),
+    Salary DECIMAL(10, 2),
+    Department VARCHAR(50)
+);
+
+-- Insert sample data into the Employees table
+INSERT INTO Employees (First_Name, Last_Name, Salary, Department)
+VALUES 
+    ('John', 'Doe', 55000, 'HR'),
+    ('Jane', 'Smith', 65000, 'IT'),
+    ('Alice', 'Johnson', 72000, 'Finance');
+
+

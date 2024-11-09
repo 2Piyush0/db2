@@ -1,0 +1,63 @@
+{
+    "roll_no": "string",
+    "name": "string",
+    "class": "string",
+    "dept": "string",
+    "aggregate_marks": "number"
+}
+var mapFunction = function() {
+    if (this.class === "TE") {
+        emit(this.dept, this.aggregate_marks);
+    }
+};
+var reduceFunction = function(key, values) {
+    return Array.sum(values);  // Sum the aggregate marks for each department
+};
+db.Student.mapReduce(
+    mapFunction,
+    reduceFunction,
+    {
+        out: "total_marks_tea"   // Output collection where results will be stored
+    }
+);
+var mapFunction = function() {
+    if (this.class === "SE") {
+        emit(this.dept, this.aggregate_marks);
+    }
+};
+var reduceFunction = function(key, values) {
+    return Math.max.apply(null, values);  // Find the highest marks for each department
+};
+db.Student.mapReduce(
+    mapFunction,
+    reduceFunction,
+    {
+        out: "highest_marks_se"   // Output collection where results will be stored
+    }
+);
+var mapFunction = function() {
+    if (this.class === "BE") {
+        emit(this.dept, { totalMarks: this.aggregate_marks, count: 1 });
+    }
+};
+var reduceFunction = function(key, values) {
+    var result = { totalMarks: 0, count: 0 };
+    values.forEach(function(value) {
+        result.totalMarks += value.totalMarks;
+        result.count += value.count;
+    });
+    return result;
+};
+var finalizeFunction = function(key, reducedValue) {
+    reducedValue.averageMarks = reducedValue.totalMarks / reducedValue.count;
+    return reducedValue;
+};
+db.Student.mapReduce(
+    mapFunction,
+    reduceFunction,
+    {
+        finalize: finalizeFunction,
+        out: "average_marks_be"   // Output collection where results will be stored
+    }
+);
+

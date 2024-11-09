@@ -1,0 +1,68 @@
+-- Step 1: Create the Database
+DROP DATABASE IF EXISTS EmployeeDB;
+CREATE DATABASE EmployeeDB;
+USE EmployeeDB;
+
+-- Step 2: Create the Employee Table
+DROP TABLE IF EXISTS Employee;
+CREATE TABLE Employee (
+    emp_id INT PRIMARY KEY,
+    name VARCHAR(50),
+    DoJ DATE,
+    salary DECIMAL(10, 2)
+);
+
+-- Step 3: Create the Salary_Increment Table
+DROP TABLE IF EXISTS Salary_Increment;
+CREATE TABLE Salary_Increment (
+    increment_id INT AUTO_INCREMENT PRIMARY KEY,
+    emp_id INT,
+    new_salary DECIMAL(10, 2),
+    increment_date DATE DEFAULT CURRENT_DATE
+);
+
+-- Step 4: Create the Stored Procedure for Salary Increment
+DELIMITER //
+
+CREATE PROCEDURE IncrementSalary (IN p_emp_id INT)
+BEGIN
+    DECLARE v_current_salary DECIMAL(10, 2);
+    DECLARE v_experience INT;
+    DECLARE v_increment DECIMAL(5, 2) DEFAULT 0.05;
+    DECLARE v_new_salary DECIMAL(10, 2);
+
+    -- Check if the employee exists and retrieve current salary and experience
+    SELECT salary, FLOOR(TIMESTAMPDIFF(MONTH, DoJ, CURDATE()) / 12) INTO v_current_salary, v_experience
+    FROM Employee
+    WHERE emp_id = p_emp_id;
+
+    IF v_experience > 10 THEN
+        SET v_increment = 0.20;
+    ELSEIF v_experience > 5 THEN
+        SET v_increment = 0.10;
+    END IF;
+
+    SET v_new_salary = v_current_salary + (v_current_salary * v_increment);
+
+    -- Insert the new salary into Salary_Increment table
+    INSERT INTO Salary_Increment (emp_id, new_salary)
+    VALUES (p_emp_id, v_new_salary);
+
+    SELECT CONCAT('Salary of employee ', p_emp_id, ' has been increased to: ', v_new_salary) AS result;
+END //
+
+DELIMITER ;
+
+-- Step 5: Insert sample data into Employee table
+INSERT INTO Employee (emp_id, name, DoJ, salary)
+VALUES 
+(1, 'John Doe', '2012-08-16', 5000.00),
+(2, 'Jane Smith', '2016-02-16', 4500.00);
+
+-- Step 6: Call the procedure to increment salary
+CALL IncrementSalary(1);
+CALL IncrementSalary(2);
+
+-- Step 7: Verify the updates
+SELECT * FROM Salary_Increment;
+

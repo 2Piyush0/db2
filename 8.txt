@@ -1,0 +1,109 @@
+-- Step 1: Create the Database
+DROP DATABASE IF EXISTS CompanyDB;
+CREATE DATABASE CompanyDB;
+USE CompanyDB;
+
+-- Step 2: Create the Manager Table
+CREATE TABLE Manager (
+    Manager_id INT PRIMARY KEY,
+    Manager_name VARCHAR(100)
+);
+
+-- Step 3: Create the Locations Table
+CREATE TABLE Locations (
+    Location_id INT PRIMARY KEY,
+    Street_address VARCHAR(100),
+    Postal_code VARCHAR(20),
+    City VARCHAR(50),
+    State VARCHAR(50),
+    Country_id VARCHAR(2)  -- Use VARCHAR for country codes
+);
+
+-- Step 4: Create the Departments Table
+CREATE TABLE Departments (
+    Department_id INT PRIMARY KEY,
+    Department_name VARCHAR(100),
+    Manager_id INT,
+    Location_id INT,
+    FOREIGN KEY (Manager_id) REFERENCES Manager(Manager_id),
+    FOREIGN KEY (Location_id) REFERENCES Locations(Location_id)
+);
+
+-- Step 5: Create the Employee Table
+CREATE TABLE Employee (
+    Employee_id INT PRIMARY KEY,
+    First_name VARCHAR(50),
+    Last_name VARCHAR(50),
+    Hire_date DATE,
+    Salary DECIMAL(10, 2),
+    Job_title VARCHAR(50),
+    Manager_id INT,
+    Department_id INT,
+    FOREIGN KEY (Manager_id) REFERENCES Manager(Manager_id),
+    FOREIGN KEY (Department_id) REFERENCES Departments(Department_id)
+);
+
+-- Step 6: Insert Data into the Manager Table
+INSERT INTO Manager (Manager_id, Manager_name) 
+VALUES 
+    (1, 'John Doe'), 
+    (2, 'Jane Smith');
+
+-- Step 7: Insert Data into the Locations Table
+INSERT INTO Locations (Location_id, Street_address, Postal_code, City, State, Country_id) 
+VALUES 
+    (1, '123 Main St', '10001', 'New York', 'NY', 'US'), 
+    (2, '456 Elm St', '20001', 'Washington', 'DC', 'US');
+
+-- Step 8: Insert Data into the Departments Table
+INSERT INTO Departments (Department_id, Department_name, Manager_id, Location_id)
+VALUES 
+    (1, 'HR', 1, 1), 
+    (2, 'IT', 2, 2);
+
+-- Step 9: Insert Data into the Employee Table
+INSERT INTO Employee (Employee_id, First_name, Last_name, Hire_date, Salary, Job_title, Manager_id, Department_id)
+VALUES 
+    (101, 'Alice', 'Singh', '2010-01-15', 12000, 'Manager', 1, 1),
+    (102, 'Bob', 'Brown', '2012-03-10', 15000, 'Developer', 1, 2),
+    (103, 'Charlie', 'Jones', '2015-08-20', 9000, 'Developer', 2, 2),
+    (104, 'David', 'White', '2018-04-25', 8000, 'Tester', 1, 1);
+
+-- Step 10: Queries
+
+-- 1. Select employees with salary higher than the employee with the last name 'Singh'
+SELECT E.First_name, E.Last_name, E.Salary
+FROM Employee E
+WHERE E.Salary > (
+    SELECT Salary
+    FROM Employee
+    WHERE Last_name = 'Singh'
+);
+
+-- 2. Select employees in the US with a manager
+SELECT E.First_name, E.Last_name
+FROM Employee E
+JOIN Departments D ON E.Department_id = D.Department_id
+JOIN Locations L ON D.Location_id = L.Location_id
+WHERE E.Manager_id IS NOT NULL
+  AND L.Country_id = 'US';
+
+-- 3. Select employees with a salary higher than the average salary
+SELECT E.First_name, E.Last_name, E.Salary
+FROM Employee E
+WHERE E.Salary > (SELECT AVG(Salary) FROM Employee);
+
+-- 4. Select employees with their manager's name
+SELECT E.Employee_id, E.Last_name AS Employee_Last_name, E.Manager_id, M.Manager_name
+FROM Employee E
+JOIN Manager M ON E.Manager_id = M.Manager_id;
+
+-- 5. Select employees hired after the employee with last name 'Jones'
+SELECT E.First_name, E.Last_name, E.Hire_date
+FROM Employee E
+WHERE E.Hire_date > (
+    SELECT Hire_date
+    FROM Employee
+    WHERE Last_name = 'Jones'
+);
+

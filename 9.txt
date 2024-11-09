@@ -1,0 +1,104 @@
+-- Step 1: Create the Database
+DROP DATABASE IF EXISTS CompanyDB;
+CREATE DATABASE CompanyDB;
+USE CompanyDB;
+
+-- Step 2: Create the Employee Table
+CREATE TABLE Employee (
+    Emp_id INT PRIMARY KEY,
+    Emp_Name VARCHAR(100),
+    Salary DECIMAL(10, 2)
+);
+
+-- Step 3: Procedure to Fetch Employees with Salary > 50,000 Using an Explicit Cursor
+DELIMITER //
+
+CREATE PROCEDURE FetchHighSalaryEmployees()
+BEGIN
+    -- Declare variables to hold cursor data
+    DECLARE v_emp_id INT;
+    DECLARE v_emp_name VARCHAR(100);
+    DECLARE v_salary DECIMAL(10, 2);
+
+    -- Declare cursor for employees with Salary > 50,000
+    DECLARE emp_cursor CURSOR FOR
+        SELECT Emp_id, Emp_Name, Salary
+        FROM Employee
+        WHERE Salary > 50000;
+
+    -- Declare NOT FOUND handler
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_emp_id = NULL;
+
+    -- Open cursor
+    OPEN emp_cursor;
+
+    -- Fetch records and display them in a loop
+    read_loop: LOOP
+        FETCH emp_cursor INTO v_emp_id, v_emp_name, v_salary;
+        IF v_emp_id IS NULL THEN
+            LEAVE read_loop; -- Exit loop if no more records
+        END IF;
+        -- Display the employee details
+        SELECT CONCAT('Emp_ID: ', v_emp_id, ', Emp_Name: ', v_emp_name, ', Salary: ', v_salary) AS EmployeeDetails;
+    END LOOP;
+
+    -- Close cursor
+    CLOSE emp_cursor;
+END //
+
+DELIMITER ;
+
+-- Step 4: Procedure to Count Total Employees
+DELIMITER //
+
+CREATE PROCEDURE CountTotalEmployees()
+BEGIN
+    DECLARE total_employees INT;
+
+    -- Use a simple SELECT INTO to count employees
+    SELECT COUNT(*) INTO total_employees
+    FROM Employee;
+
+    -- Display the total number of employees
+    SELECT CONCAT('Total Number of Employees: ', total_employees) AS TotalEmployees;
+END //
+
+DELIMITER ;
+
+-- Step 5: Procedure to Fetch Employee by Emp_id Using a Parameterized Cursor
+DELIMITER //
+
+CREATE PROCEDURE FetchEmployeeById(IN p_emp_id INT)
+BEGIN
+    -- Declare variables to hold fetched data
+    DECLARE v_emp_name VARCHAR(100);
+    DECLARE v_salary DECIMAL(10, 2);
+
+    -- Declare cursor to fetch employee by Emp_id
+    DECLARE emp_salary_cursor CURSOR FOR
+        SELECT Emp_Name, Salary
+        FROM Employee
+        WHERE Emp_id = p_emp_id;
+
+    -- Declare NOT FOUND handler
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET v_emp_name = NULL;
+
+    -- Open cursor
+    OPEN emp_salary_cursor;
+
+    -- Fetch the record
+    FETCH emp_salary_cursor INTO v_emp_name, v_salary;
+
+    -- Display the result if employee found
+    IF v_emp_name IS NOT NULL THEN
+        SELECT CONCAT('Emp_Name: ', v_emp_name, ', Salary: ', v_salary) AS EmployeeDetails;
+    ELSE
+        SELECT CONCAT('Employee with Emp_ID ', p_emp_id, ' not found.') AS EmployeeNotFound;
+    END IF;
+
+    -- Close cursor
+    CLOSE emp_salary_cursor;
+END //
+
+DELIMITER ;
+

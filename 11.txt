@@ -1,0 +1,90 @@
+-- Step 1: Create the Database and Use it
+DROP DATABASE IF EXISTS BankDB;
+CREATE DATABASE BankDB;
+USE BankDB;
+
+-- Step 2: Create the Customer Table
+CREATE TABLE Customer (
+    CustID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100),
+    Cust_Address VARCHAR(255),
+    Phone_no VARCHAR(15),
+    Email_ID VARCHAR(100),
+    Age INT
+);
+
+-- Step 3: Create the Branch Table with AUTO_INCREMENT for Branch_ID
+CREATE TABLE Branch (
+    Branch_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Branch_Name VARCHAR(100),
+    Address VARCHAR(255)
+);
+
+-- Step 4: Create the Account Table with Foreign Keys to Customer and Branch
+CREATE TABLE Account (
+    Account_no INT AUTO_INCREMENT PRIMARY KEY,
+    Branch_ID INT,
+    CustID INT,
+    date_open DATE,
+    Account_type VARCHAR(50),
+    Balance DECIMAL(10, 2),
+    FOREIGN KEY (Branch_ID) REFERENCES Branch(Branch_ID),
+    FOREIGN KEY (CustID) REFERENCES Customer(CustID)
+);
+
+-- Step 5: Create an Index on Account_no (Optional but helps in query performance)
+CREATE INDEX idx_account_primary_key ON Account (Account_no);
+
+-- Step 6: Create a View for Customer Information (Age < 45)
+CREATE VIEW Customer_Info AS
+SELECT 
+    CustID, 
+    Name, 
+    Cust_Address, 
+    Phone_no, 
+    Email_ID, 
+    Age
+FROM Customer
+WHERE Age < 45;
+
+-- Step 7: Create or Replace the Customer_Info View with Additional Info for Customers with Specific Date
+CREATE OR REPLACE VIEW Customer_Info AS
+SELECT 
+    C.CustID, 
+    C.Name, 
+    C.Cust_Address, 
+    C.Phone_no, 
+    C.Email_ID, 
+    C.Age, 
+    A.date_open AS Open_Date
+FROM 
+    Customer C
+JOIN 
+    Account A ON C.CustID = A.CustID
+WHERE 
+    C.Age < 45 AND A.date_open = '2017-04-16';
+
+-- Step 8: Verify the created tables and view
+-- To check if the tables were created successfully, use:
+SHOW TABLES;
+
+-- To view the structure of a specific table, you can use:
+DESCRIBE Customer;
+DESCRIBE Branch;
+DESCRIBE Account;
+
+-- To view the created view:
+SELECT * FROM Customer_Info;
+
+
++-------------+        +------------+        +------------+
+|  Customer  |        |   Branch   |        |  Account   |
++-------------+        +------------+        +------------+
+| CustID (PK) |◄──────| Branch_ID  |        | Account_no (PK)|
+| Name        |        | Branch_Name|        | Branch_ID (FK) |
+| Cust_Address|        | Address    |        | CustID (FK)    |
+| Phone_no    |        +------------+        | Date_open      |
+| Email_ID    |                            | Account_type   |
+| Age         |                            | Balance        |
++-------------+                            +----------------+
+

@@ -1,0 +1,75 @@
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class LoginForm {
+    private static MongoClient mongoClient; // MongoDB client to connect to the database
+    private static MongoDatabase database; // Reference to the database
+
+    public static void main(String[] args) {
+        String uri = "mongodb://localhost:27017"; // Connection string for MongoDB
+        mongoClient = new MongoClient(new MongoClientURI(uri));
+        database = mongoClient.getDatabase("user"); // Change this to your database name
+
+        // Setting up the JFrame for the login form
+        JFrame frame = new JFrame("Login Form");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(400, 300);
+        frame.setLayout(new GridLayout(3, 2)); // 3 rows and 2 columns
+
+        // Creating the labels and text fields
+        JLabel usernameLabel = new JLabel("Username:");
+        JTextField usernameField = new JTextField();
+        JLabel passwordLabel = new JLabel("Password:");
+        JPasswordField passwordField = new JPasswordField();
+        JButton loginButton = new JButton("Login");
+
+        // Adding components to the frame
+        frame.add(usernameLabel);
+        frame.add(usernameField);
+        frame.add(passwordLabel);
+        frame.add(passwordField);
+        frame.add(loginButton);
+
+        // Action listener for the login button
+        loginButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String username = usernameField.getText().trim(); // Get username from the text field and trim it
+                String password = new String(passwordField.getPassword()).trim(); // Get password from the password field and trim it
+                
+                // Validate the user credentials
+                if (validateUser(username, password)) {
+                    JOptionPane.showMessageDialog(frame, "Login Successful!"); // Show success message
+                } else {
+                    JOptionPane.showMessageDialog(frame, "Invalid Username or Password.", "Error", JOptionPane.ERROR_MESSAGE); // Show error message
+                }
+            }
+        });
+
+        // Making the frame visible
+        frame.setVisible(true);
+    }
+
+    // Method to validate user credentials against the MongoDB collection
+    private static boolean validateUser(String username, String password) {
+        MongoCollection<Document> collection = database.getCollection("users"); // Accessing the users collection
+        // Find a document that matches the username and password
+        Document user = collection.find(new Document("username", username).append("password", password)).first();
+
+        // Debugging output
+        if (user != null) {
+            System.out.println("User found: " + user.toJson()); // Print user details if found
+            return true; // Return true if user exists
+        } else {
+            System.out.println("User not found for username: " + username); // Print debug message if not found
+            return false; // Return false if user does not exist
+        }
+    }
+}

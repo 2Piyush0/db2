@@ -1,0 +1,79 @@
+-- Create Database
+CREATE DATABASE IF NOT EXISTS CompanyDB;
+USE CompanyDB;
+
+-- Create Locations Table
+CREATE TABLE Locations (
+    Location_id INT PRIMARY KEY,
+    Street_address VARCHAR(255),
+    Postal_code VARCHAR(20),
+    City VARCHAR(100),
+    State VARCHAR(100),
+    Country_id INT
+);
+
+-- Create Manager Table
+CREATE TABLE Manager (
+    Manager_id INT PRIMARY KEY,
+    Manager_name VARCHAR(100)
+);
+
+-- Create Departments Table with Foreign Keys
+CREATE TABLE Departments (
+    Department_id INT PRIMARY KEY,
+    Department_name VARCHAR(100),
+    Manager_id INT,
+    Location_id INT,
+    FOREIGN KEY (Manager_id) REFERENCES Manager(Manager_id),
+    FOREIGN KEY (Location_id) REFERENCES Locations(Location_id)
+);
+
+-- Create Employee Table with Foreign Keys
+CREATE TABLE Employee (
+    Employee_id INT PRIMARY KEY,
+    First_name VARCHAR(50),
+    Last_name VARCHAR(50),
+    Hire_date DATE,
+    Salary DECIMAL(10, 2),
+    Job_title VARCHAR(100),
+    Manager_id INT,
+    Department_id INT,
+    FOREIGN KEY (Manager_id) REFERENCES Manager(Manager_id),
+    FOREIGN KEY (Department_id) REFERENCES Departments(Department_id)
+);
+-- Query to fetch employees in the 'IT' department with salary greater than the average salary
+SELECT E.First_name, E.Last_name, E.Salary
+FROM Employee E
+JOIN Departments D ON E.Department_id = D.Department_id
+WHERE E.Salary > (
+    SELECT AVG(Salary) 
+    FROM Employee
+) 
+AND D.Department_name = 'IT';
+-- Query to find the employee with the minimum salary in each department
+SELECT E.First_name, E.Last_name, E.Salary
+FROM Employee E
+WHERE E.Salary = (
+    SELECT MIN(E2.Salary)
+    FROM Employee E2
+    WHERE E2.Department_id = E.Department_id
+);
+-- Query to get employees whose salary is above the average salary in their department
+SELECT E.Employee_id, E.First_name, E.Last_name, E.Salary
+FROM Employee E
+WHERE E.Salary > (
+    SELECT AVG(E2.Salary)
+    FROM Employee E2
+    WHERE E2.Department_id = E.Department_id
+);
+-- Query to list department names, managers, and their locations
+SELECT D.Department_name, M.Manager_name, L.City
+FROM Departments D
+JOIN Manager M ON D.Manager_id = M.Manager_id
+JOIN Locations L ON D.Location_id = L.Location_id;
+-- Query to get managers with more than 15 years of experience
+SELECT E.First_name, E.Last_name, E.Hire_date, E.Salary
+FROM Employee E
+WHERE E.Job_title = 'Manager'
+AND DATEDIFF(CURDATE(), E.Hire_date) / 365 > 15;
+

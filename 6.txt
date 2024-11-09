@@ -1,0 +1,105 @@
+-- Step 1: Create the Database
+DROP DATABASE IF EXISTS CompanyDB;
+CREATE DATABASE CompanyDB;
+USE CompanyDB;
+
+-- Step 2: Create the Employee Table
+CREATE TABLE Employee (
+    emp_id INT PRIMARY KEY,
+    dept_id INT,
+    emp_name VARCHAR(100),
+    DoJ DATE,
+    salary DECIMAL(15, 2),
+    commission DECIMAL(10, 2) DEFAULT NULL,
+    job_title VARCHAR(50)
+);
+
+-- Step 3: Insert Sample Data into Employee Table
+INSERT INTO Employee (emp_id, dept_id, emp_name, DoJ, salary, commission, job_title) VALUES
+(1, 101, 'John Doe', '2010-03-15', 12000, NULL, 'Manager'),
+(2, 102, 'Jane Smith', '2015-06-20', 8000, NULL, 'Developer'),
+(3, 101, 'Sam Brown', '2009-11-10', 1500, NULL, 'Clerk'),
+(4, 103, 'Chris Green', '2012-08-05', 5000, NULL, 'Designer'),
+(5, 102, 'Anna White', '2007-02-12', 25000, NULL, 'Director');
+
+-- Step 4: Create the Stored Procedure to Calculate and Update Commission
+DELIMITER $$
+
+CREATE PROCEDURE UpdateCommission()
+BEGIN
+    DECLARE emp_id INT;
+    DECLARE emp_salary DECIMAL(15,2);
+    DECLARE emp_experience INT;
+    DECLARE emp_DoJ DATE;
+    DECLARE done INT DEFAULT 0;
+    
+    -- Declare cursor to iterate through each employee's ID, salary, and date of joining
+    DECLARE emp_cursor CURSOR FOR
+        SELECT emp_id, salary, DoJ FROM Employee;
+    
+    -- Handler to signal end of cursor
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+    
+    OPEN emp_cursor;
+    
+    read_loop: LOOP
+        FETCH emp_cursor INTO emp_id, emp_salary, emp_DoJ;
+        
+        IF done = 1 THEN
+            LEAVE read_loop;
+        END IF;
+        
+        -- Calculate experience in years
+        SET emp_experience = TIMESTAMPDIFF(YEAR, emp_DoJ, CURDATE());
+        
+        -- Update commission based on conditions
+        IF emp_salary > 10000 THEN
+            UPDATE Employee SET commission = emp_salary * 0.004 WHERE emp_id = emp_id;
+        ELSEIF emp_salary < 10000 AND emp_experience > 10 THEN
+            UPDATE Employee SET commission = emp_salary * 0.0035 WHERE emp_id = emp_id;
+        ELSEIF emp_salary < 3000 THEN
+            UPDATE Employee SET commission = emp_salary * 0.0025 WHERE emp_id = emp_id;
+        ELSE
+            UPDATE Employee SET commission = emp_salary * 0.0015 WHERE emp_id = emp_id;
+        END IF;
+    END LOOP;
+    
+    CLOSE emp_cursor;
+END $$
+
+DELIMITER ;
+
+-- Step 5: Call the Procedure to Update Commissions for All Employees
+CALL UpdateCommission();
+
+-- Step 6: Create a Function to Return the Manager's Name Based on Department ID
+DELIMITER $$
+
+CREATE FUNCTION GetManagerByDept(department_id INT) 
+RETURNS VARCHAR(100)
+DETERMINISTIC
+BEGIN
+    DECLARE manager_name VARCHAR(100);
+    
+    -- Get the name of the manager for the given department
+    SELECT emp_name INTO manager_name
+    FROM Employee
+    WHERE dept_id = department_id AND job_title = 'Manager'
+    LIMIT 1;
+    
+    RETURN manager_name;
+END $$
+
+DELIMITER ;
+
+-- Step 7: Test the Function and Queries
+
+-- Get the manager name for department 101
+SELECT GetManagerByDept(101);
+
+-- Check the updated commission values for all employees
+SELECT emp_id, emp_name, commission FROM Employee;
+
+-- Get the manager name for department 102
+SELECT GetManagerByDept(102);
+
